@@ -5,76 +5,148 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Product Sorting App</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <title>Laravel Product Sorting</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- SortableJS -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Sortable -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
     <style>
-        .sortable-ghost {
-            opacity: 0.5;
-            background: #c8ebfb;
+        body {
+            background: #f4f6f9;
         }
 
-        .sortable-chosen {
-            background-color: #e9ecef;
+        .navbar-brand {
+            font-weight: bold;
         }
 
-        .sortable-drag {
-            transform: rotate(5deg);
-            cursor: grabbing;
+        .card {
+            border: none;
+            border-radius: 10px;
         }
 
-        .product-item {
-            transition: all 0.3s;
+        .table th {
+            vertical-align: middle;
+        }
+
+        .table td {
+            vertical-align: middle;
         }
 
         .handle {
             cursor: grab;
-            color: #6c757d;
+            color: #0d6efd;
         }
 
         .handle:active {
             cursor: grabbing;
         }
+
+        .sortable-ghost {
+            opacity: .4;
+            background: #dbeafe;
+        }
+
+        .pagination {
+            justify-content: center;
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
     </style>
+
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+
         <div class="container">
+
             <a class="navbar-brand" href="{{ route('products.index') }}">
-                <i class="fas fa-boxes"></i> Product Sorter
+                <i class="fas fa-box-open"></i>
+                Product Sorting System
             </a>
+
+            <a href="{{ route('products.create') }}" class="btn btn-success">
+
+                <i class="fas fa-plus-circle"></i>
+                Add Product
+
+            </a>
+
         </div>
+
     </nav>
 
     <div class="container mt-4">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        @endif
 
         @yield('content')
+
     </div>
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <footer>
+
+        Laravel 12 Drag & Drop Product Sorting |
+        Developed with ❤️
+
+    </footer>
+
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
+
         $.ajaxSetup({
+
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
+
         });
+
+        // Success Message
+
+        @if(session('success'))
+
+            Swal.fire({
+
+                toast: true,
+
+                position: 'top-end',
+
+                icon: 'success',
+
+                title: '{{ session("success") }}',
+
+                showConfirmButton: false,
+
+                timer: 2000
+
+            });
+
+        @endif
+
     </script>
 
     @stack('scripts')
+
 </body>
 
 </html>
