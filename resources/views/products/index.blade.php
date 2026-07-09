@@ -1,170 +1,381 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h4 class="mb-0">Products List (Drag to Reorder)</h4>
-        <a href="{{ route('products.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Add New Product
-        </a>
-    </div>
-    
-    <div class="card-body">
-        @if($products->isEmpty())
-            <div class="alert alert-info">
-                No products found. <a href="{{ route('products.create') }}">Create your first product</a>
-            </div>
-        @else
-            <div class="table-responsive">
-                <table class="table table-hover" id="sortable-table">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 50px;">#</th>
-                            <th style="width: 50px;">Sort</th>
-                            <th>Product Name</th>
-                            <th>Description</th>
-                            <th>Price</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sortable-list">
-                        @foreach($products as $product)
-                        <tr data-id="{{ $product->id }}" class="product-item">
-                            <td class="align-middle">
-                                <span class="badge bg-secondary">{{ $product->sort_order }}</span>
-                            </td>
-                            <td class="align-middle handle">
-                                <i class="fas fa-bars fa-lg"></i>
-                            </td>
-                            <td class="align-middle">{{ $product->name }}</td>
-                            <td class="align-middle">{{ Str::limit($product->description, 50) }}</td>
-                            <td class="align-middle">${{ number_format($product->price, 2) }}</td>
-                            <td class="align-middle">
-                                <span class="badge {{ $product->is_active ? 'bg-success' : 'bg-danger' }}">
-                                    {{ $product->is_active ? 'Active' : 'Inactive' }}
-                                </span>
-                            </td>
-                            <td class="align-middle">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('products.edit', $product->id) }}" 
-                                       class="btn btn-warning">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ route('products.destroy', $product->id) }}" 
-                                          method="POST" 
-                                          class="d-inline"
-                                          onsubmit="return confirm('Are you sure you want to delete this product?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="mt-3">
-                <small class="text-muted">
-                    <i class="fas fa-info-circle"></i> Drag and drop rows to reorder. Order is automatically saved.
-                </small>
-            </div>
-        @endif
-    </div>
-</div>
-@endsection
 
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const sortableList = document.getElementById('sortable-list');
-    
-    // Initialize SortableJS
-    const sortable = new Sortable(sortableList, {
-        handle: '.handle',
-        animation: 150,
-        ghostClass: 'sortable-ghost',
-        chosenClass: 'sortable-chosen',
-        dragClass: 'sortable-drag',
-        
-        onEnd: function(evt) {
-            updateOrder();
-        }
-    });
-    
-    // Function to update order via AJAX
-    function updateOrder() {
-        const itemIds = [];
-        const rows = document.querySelectorAll('#sortable-list tr');
-        
-        rows.forEach((row, index) => {
-            const id = row.getAttribute('data-id');
-            itemIds.push(id);
-            
-            // Update the order number display
-            const orderBadge = row.querySelector('.badge.bg-secondary');
-            if (orderBadge) {
-                orderBadge.textContent = index + 1;
-            }
-        });
-        
-        // Send AJAX request
-        $.ajax({
-            url: '{{ route("products.update-order") }}',
-            type: 'POST',
-            data: {
-                items: itemIds,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.success) {
-                    showToast('Order updated successfully!', 'success');
-                }
-            },
-            error: function(xhr) {
-                showToast('Error updating order. Please try again.', 'error');
-                console.error('Update error:', xhr.responseText);
-            }
-        });
-    }
-    
-    // Toast notification function
-    function showToast(message, type = 'info') {
-        // Remove existing toast
-        $('.custom-toast').remove();
-        
-        const toastClass = type === 'success' ? 'bg-success' : 
-                          type === 'error' ? 'bg-danger' : 'bg-info';
-        
-        const toast = $(`
-            <div class="custom-toast position-fixed bottom-0 end-0 p-3">
-                <div class="toast show" role="alert">
-                    <div class="toast-header ${toastClass} text-white">
-                        <strong class="me-auto">
-                            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                            ${type.charAt(0).toUpperCase() + type.slice(1)}
-                        </strong>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">
-                        ${message}
+    <div class="container-fluid">
+
+        <!-- Dashboard Cards -->
+        <div class="row mb-4">
+
+            <div class="col-md-3">
+                <div class="card border-primary shadow-sm">
+                    <div class="card-body text-center">
+                        <h6>Total Products</h6>
+                        <h2 class="text-primary">{{ $totalProducts }}</h2>
                     </div>
                 </div>
             </div>
-        `);
-        
-        $('body').append(toast);
-        
-        // Auto remove after 3 seconds
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
-    }
-});
-</script>
+
+            <div class="col-md-3">
+                <div class="card border-success shadow-sm">
+                    <div class="card-body text-center">
+                        <h6>Active Products</h6>
+                        <h2 class="text-success">{{ $activeProducts }}</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-danger shadow-sm">
+                    <div class="card-body text-center">
+                        <h6>Inactive Products</h6>
+                        <h2 class="text-danger">{{ $inactiveProducts }}</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-info shadow-sm">
+                    <div class="card-body text-center">
+                        <h6>Today's Products</h6>
+                        <h2 class="text-info">{{ $todayProducts }}</h2>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Main Card -->
+
+        <div class="card shadow">
+
+            <div class="card-header d-flex justify-content-between align-items-center">
+
+                <h4 class="mb-0">
+                    <i class="fas fa-boxes"></i>
+                    Product List
+                </h4>
+
+                <a href="{{ route('products.create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Add Product
+                </a>
+
+            </div>
+
+            <div class="card-body">
+
+                <!-- Search -->
+
+                <form action="{{ route('products.index') }}" method="GET">
+
+                    <div class="row mb-4">
+
+                        <div class="col-md-10">
+
+                            <input type="text" name="search" class="form-control"
+                                placeholder="Search by Name, Description or Price..." value="{{ request('search') }}">
+
+                        </div>
+
+                        <div class="col-md-2 d-grid">
+
+                            <button class="btn btn-dark">
+                                <i class="fas fa-search"></i>
+                                Search
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+                @if($products->count())
+
+                    <div class="table-responsive">
+
+                        <table class="table table-bordered table-hover align-middle">
+
+                            <thead class="table-dark">
+
+                                <tr>
+
+                                    <th width="70">Order</th>
+
+                                    <th width="70">Drag</th>
+
+                                    <th>Name</th>
+
+                                    <th>Description</th>
+
+                                    <th width="120">Price</th>
+
+                                    <th width="120">Status</th>
+
+                                    <th width="140">Action</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="sortable-list">
+
+                                @foreach($products as $product)
+
+                                    <tr data-id="{{ $product->id }}">
+
+                                        <td>
+
+                                            <span class="badge bg-secondary order-badge">
+                                                {{ $product->sort_order }}
+                                            </span>
+
+                                        </td>
+
+                                        <td class="handle text-center">
+
+                                            <i class="fas fa-bars fa-lg text-primary"></i>
+
+                                        </td>
+
+                                        <td>
+
+                                            {{ $product->name }}
+
+                                        </td>
+
+                                        <td>
+
+                                            {{ Str::limit($product->description, 60) }}
+
+                                        </td>
+
+                                        <td>
+
+                                            ${{ number_format($product->price, 2) }}
+
+                                        </td>
+
+                                        <td>
+
+                                            @if($product->is_active)
+
+                                                <span class="badge bg-success">
+                                                    Active
+                                                </span>
+
+                                            @else
+
+                                                <span class="badge bg-danger">
+                                                    Inactive
+                                                </span>
+
+                                            @endif
+
+                                        </td>
+
+                                        <td>
+
+                                            <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm">
+
+                                                <i class="fas fa-edit"></i>
+
+                                            </a>
+
+                                            <form action="{{ route('products.destroy', $product->id) }}" method="POST"
+                                                class="d-inline delete-form">
+
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button type="submit" class="btn btn-danger btn-sm">
+
+                                                    <i class="fas fa-trash"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        </td>
+
+                                    </tr>
+
+                                @endforeach
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <!-- Pagination -->
+
+                    <div class="mt-3 d-flex justify-content-center">
+
+                        @if ($products->lastPage() > 1)
+                            <nav>
+                                <ul class="pagination justify-content-center">
+
+                                    @for ($i = 1; $i <= $products->lastPage(); $i++)
+                                        <li class="page-item {{ $products->currentPage() == $i ? 'active' : '' }}">
+                                            <a class="page-link" href="{{ $products->url($i) }}">
+                                                {{ $i }}
+                                            </a>
+                                        </li>
+                                    @endfor
+
+                                </ul>
+                            </nav>
+                        @endif
+                    </div>
+
+                @else
+
+                    <div class="alert alert-warning">
+
+                        No Products Found.
+
+                    </div>
+
+                @endif
+
+            </div>
+
+        </div>
+
+    </div>
+
+@endsection
+
+@push('scripts')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // -----------------------------
+            // Drag & Drop Sorting
+            // -----------------------------
+            const sortableList = document.getElementById('sortable-list');
+
+            if (sortableList) {
+
+                new Sortable(sortableList, {
+                    handle: '.handle',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+
+                    onEnd: function () {
+                        updateOrder();
+                    }
+                });
+
+            }
+
+            function updateOrder() {
+
+                let items = [];
+
+                document.querySelectorAll('#sortable-list tr').forEach(function (row, index) {
+
+                    items.push(row.dataset.id);
+
+                    row.querySelector('.order-badge').innerHTML = index + 1;
+
+                });
+
+                $.ajax({
+
+                    url: "{{ route('products.update-order') }}",
+
+                    method: "POST",
+
+                    data: {
+
+                        _token: "{{ csrf_token() }}",
+
+                        items: items
+
+                    },
+
+                    success: function () {
+
+                        Swal.fire({
+
+                            toast: true,
+
+                            position: 'top-end',
+
+                            icon: 'success',
+
+                            title: 'Order Updated Successfully',
+
+                            showConfirmButton: false,
+
+                            timer: 1500
+
+                        });
+
+                    },
+
+                    error: function () {
+
+                        Swal.fire(
+
+                            'Error',
+
+                            'Unable to update order.',
+
+                            'error'
+
+                        );
+
+                    }
+
+                });
+
+            }
+
+            // -----------------------------
+            // SweetAlert Delete Confirmation
+            // -----------------------------
+            $('.delete-form').submit(function (e) {
+
+                e.preventDefault();
+
+                let form = this;
+
+                Swal.fire({
+
+                    title: 'Delete Product?',
+
+                    text: "This action cannot be undone.",
+
+                    icon: 'warning',
+
+                    showCancelButton: true,
+
+                    confirmButtonColor: '#d33',
+
+                    cancelButtonColor: '#3085d6',
+
+                    confirmButtonText: 'Yes, Delete',
+
+                    cancelButtonText: 'Cancel'
+
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+
+                        form.submit();
+
+                    }
+
+                });
+
+            });
+
+        });
+    </script>
+
 @endpush
