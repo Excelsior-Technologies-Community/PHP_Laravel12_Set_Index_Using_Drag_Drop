@@ -158,4 +158,85 @@ class ProductController extends Controller
             ]);
         }
     }
+
+    /**
+     * Bulk Product Actions
+     */
+    public function bulkAction(Request $request)
+    {
+        $request->validate([
+            'product_ids' => 'required|array',
+            'action' => 'required|string'
+        ]);
+
+        $products = Product::whereIn('id', $request->product_ids);
+
+        switch ($request->action) {
+
+            case 'delete':
+
+                $products->delete();
+
+                $this->reorderProducts();
+
+                $message = "Products deleted successfully.";
+
+                break;
+
+
+            case 'activate':
+
+                $products->update([
+                    'is_active' => true
+                ]);
+
+                $message = "Products activated successfully.";
+
+                break;
+
+
+            case 'deactivate':
+
+                $products->update([
+                    'is_active' => false
+                ]);
+
+                $message = "Products deactivated successfully.";
+
+                break;
+
+
+            default:
+
+                return back()->with(
+                    'error',
+                    'Invalid action'
+                );
+        }
+
+        return redirect()
+            ->route('products.index')
+            ->with('success', $message);
+    }
+
+
+    /**
+     * Reset Product Sorting
+     */
+    public function resetOrder()
+    {
+
+        $products = Product::orderBy('id')->get();
+
+        foreach ($products as $index => $product) {
+
+            $product->update([
+                'sort_order' => $index + 1
+            ]);
+        }
+
+        return response()->json([
+            'success' => true
+        ]);
+    }
 }

@@ -42,6 +42,11 @@
             vertical-align: middle;
         }
 
+        .product-checkbox {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
         .handle {
             cursor: grab;
             color: #0d6efd;
@@ -112,7 +117,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-
         $.ajaxSetup({
 
             headers: {
@@ -125,24 +129,23 @@
 
         @if(session('success'))
 
-            Swal.fire({
+        Swal.fire({
 
-                toast: true,
+            toast: true,
 
-                position: 'top-end',
+            position: 'top-end',
 
-                icon: 'success',
+            icon: 'success',
 
-                title: '{{ session("success") }}',
+            title: '{{ session("success") }}',
 
-                showConfirmButton: false,
+            showConfirmButton: false,
 
-                timer: 2000
+            timer: 2000
 
-            });
+        });
 
         @endif
-
     </script>
 
     @stack('scripts')
