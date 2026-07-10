@@ -2,380 +2,610 @@
 
 @section('content')
 
-    <div class="container-fluid">
+<div class="container-fluid">
 
-        <!-- Dashboard Cards -->
-        <div class="row mb-4">
+    <!-- Dashboard Cards -->
+    <div class="row mb-4">
 
-            <div class="col-md-3">
-                <div class="card border-primary shadow-sm">
-                    <div class="card-body text-center">
-                        <h6>Total Products</h6>
-                        <h2 class="text-primary">{{ $totalProducts }}</h2>
-                    </div>
+        <div class="col-md-3">
+            <div class="card border-primary shadow-sm">
+                <div class="card-body text-center">
+                    <h6>Total Products</h6>
+                    <h2 class="text-primary">{{ $totalProducts }}</h2>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-3">
-                <div class="card border-success shadow-sm">
-                    <div class="card-body text-center">
-                        <h6>Active Products</h6>
-                        <h2 class="text-success">{{ $activeProducts }}</h2>
-                    </div>
+        <div class="col-md-3">
+            <div class="card border-success shadow-sm">
+                <div class="card-body text-center">
+                    <h6>Active Products</h6>
+                    <h2 class="text-success">{{ $activeProducts }}</h2>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-3">
-                <div class="card border-danger shadow-sm">
-                    <div class="card-body text-center">
-                        <h6>Inactive Products</h6>
-                        <h2 class="text-danger">{{ $inactiveProducts }}</h2>
-                    </div>
+        <div class="col-md-3">
+            <div class="card border-danger shadow-sm">
+                <div class="card-body text-center">
+                    <h6>Inactive Products</h6>
+                    <h2 class="text-danger">{{ $inactiveProducts }}</h2>
                 </div>
             </div>
+        </div>
 
-            <div class="col-md-3">
-                <div class="card border-info shadow-sm">
-                    <div class="card-body text-center">
-                        <h6>Today's Products</h6>
-                        <h2 class="text-info">{{ $todayProducts }}</h2>
-                    </div>
+        <div class="col-md-3">
+            <div class="card border-info shadow-sm">
+                <div class="card-body text-center">
+                    <h6>Today's Products</h6>
+                    <h2 class="text-info">{{ $todayProducts }}</h2>
                 </div>
             </div>
+        </div>
+
+    </div>
+
+    <!-- Main Card -->
+
+    <div class="card shadow">
+
+        <div class="card-header d-flex justify-content-between align-items-center">
+
+            <h4 class="mb-0">
+                <i class="fas fa-boxes"></i>
+                Product List
+            </h4>
+
+            <a href="{{ route('products.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Add Product
+            </a>
 
         </div>
 
-        <!-- Main Card -->
+        <div class="card-body">
 
-        <div class="card shadow">
+            <!-- Search -->
 
-            <div class="card-header d-flex justify-content-between align-items-center">
+            <form action="{{ route('products.index') }}" method="GET">
 
-                <h4 class="mb-0">
-                    <i class="fas fa-boxes"></i>
-                    Product List
-                </h4>
+                <div class="row mb-4">
 
-                <a href="{{ route('products.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i>
-                    Add Product
-                </a>
+                    <div class="col-md-10">
 
-            </div>
-
-            <div class="card-body">
-
-                <!-- Search -->
-
-                <form action="{{ route('products.index') }}" method="GET">
-
-                    <div class="row mb-4">
-
-                        <div class="col-md-10">
-
-                            <input type="text" name="search" class="form-control"
-                                placeholder="Search by Name, Description or Price..." value="{{ request('search') }}">
-
-                        </div>
-
-                        <div class="col-md-2 d-grid">
-
-                            <button class="btn btn-dark">
-                                <i class="fas fa-search"></i>
-                                Search
-                            </button>
-
-                        </div>
+                        <input type="text" name="search" class="form-control"
+                            placeholder="Search by Name, Description or Price..." value="{{ request('search') }}">
 
                     </div>
 
-                </form>
+                    <div class="col-md-2 d-grid">
+
+                        <button class="btn btn-dark">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+            <form method="POST"
+                action="{{ route('products.bulk-action') }}"
+                id="bulkForm">
+
+                @csrf
+
+
+                <div class="row mb-3">
+
+                    <div class="col-md-6 d-flex gap-2">
+
+                        <select name="action"
+                            class="form-select"
+                            required>
+
+                            <option value="">
+                                Select Action
+                            </option>
+
+                            <option value="activate">
+                                Activate Selected
+                            </option>
+
+                            <option value="deactivate">
+                                Deactivate Selected
+                            </option>
+
+                            <option value="delete">
+                                Delete Selected
+                            </option>
+
+                        </select>
+
+
+                        <button class="btn btn-dark">
+
+                            <i class="fas fa-tasks"></i>
+                            Apply
+
+                        </button>
+
+
+                        <button type="button"
+                            id="resetOrder"
+                            class="btn btn-warning">
+
+                            <i class="fas fa-sort"></i>
+                            Reset Order
+
+                        </button>
+
+
+                    </div>
+
+                </div>
 
                 @if($products->count())
 
-                    <div class="table-responsive">
+                <div class="table-responsive">
 
-                        <table class="table table-bordered table-hover align-middle">
+                    <table class="table table-bordered table-hover align-middle">
 
-                            <thead class="table-dark">
+                        <thead class="table-dark">
 
-                                <tr>
+                            <tr>
 
-                                    <th width="70">Order</th>
+                                <th width="50">
 
-                                    <th width="70">Drag</th>
+                                    <input type="checkbox" id="selectAll">
 
-                                    <th>Name</th>
+                                </th>
 
-                                    <th>Description</th>
+                                <th width="70">Order</th>
 
-                                    <th width="120">Price</th>
+                                <th width="70">Drag</th>
 
-                                    <th width="120">Status</th>
+                                <th>Name</th>
 
-                                    <th width="140">Action</th>
+                                <th>Description</th>
 
-                                </tr>
+                                <th width="120">Price</th>
 
-                            </thead>
+                                <th width="120">Status</th>
 
-                            <tbody id="sortable-list">
+                                <th width="140">Action</th>
 
-                                @foreach($products as $product)
+                            </tr>
 
-                                    <tr data-id="{{ $product->id }}">
+                        </thead>
 
-                                        <td>
+                        <tbody id="sortable-list">
 
-                                            <span class="badge bg-secondary order-badge">
-                                                {{ $product->sort_order }}
-                                            </span>
+                            @foreach($products as $product)
 
-                                        </td>
+                            <tr data-id="{{ $product->id }}">
 
-                                        <td class="handle text-center">
+                                <td>
 
-                                            <i class="fas fa-bars fa-lg text-primary"></i>
+                                    <input
+                                        type="checkbox"
+                                        name="product_ids[]"
+                                        value="{{ $product->id }}"
+                                        class="product-checkbox">
 
-                                        </td>
+                                </td>
 
-                                        <td>
+                                <td>
 
-                                            {{ $product->name }}
+                                    <span class="badge bg-secondary order-badge">
+                                        {{ $product->sort_order }}
+                                    </span>
 
-                                        </td>
+                                </td>
 
-                                        <td>
+                                <td class="handle text-center">
 
-                                            {{ Str::limit($product->description, 60) }}
+                                    <i class="fas fa-bars fa-lg text-primary"></i>
 
-                                        </td>
+                                </td>
 
-                                        <td>
+                                <td>
 
-                                            ${{ number_format($product->price, 2) }}
+                                    {{ $product->name }}
 
-                                        </td>
+                                </td>
 
-                                        <td>
+                                <td>
 
-                                            @if($product->is_active)
+                                    {{ Str::limit($product->description, 60) }}
 
-                                                <span class="badge bg-success">
-                                                    Active
-                                                </span>
+                                </td>
 
-                                            @else
+                                <td>
 
-                                                <span class="badge bg-danger">
-                                                    Inactive
-                                                </span>
+                                    ${{ number_format($product->price, 2) }}
 
-                                            @endif
+                                </td>
 
-                                        </td>
+                                <td>
 
-                                        <td>
+                                    @if($product->is_active)
 
-                                            <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm">
+                                    <span class="badge bg-success">
+                                        Active
+                                    </span>
 
-                                                <i class="fas fa-edit"></i>
+                                    @else
 
-                                            </a>
+                                    <span class="badge bg-danger">
+                                        Inactive
+                                    </span>
 
-                                            <form action="{{ route('products.destroy', $product->id) }}" method="POST"
-                                                class="d-inline delete-form">
+                                    @endif
 
-                                                @csrf
-                                                @method('DELETE')
+                                </td>
 
-                                                <button type="submit" class="btn btn-danger btn-sm">
+                                <td>
 
-                                                    <i class="fas fa-trash"></i>
+                                    <a href="{{ route('products.edit', $product->id) }}" class="btn btn-warning btn-sm">
 
-                                                </button>
+                                        <i class="fas fa-edit"></i>
 
-                                            </form>
+                                    </a>
 
-                                        </td>
+                                    <button type="button"
+                                        class="btn btn-danger btn-sm delete-btn"
+                                        data-id="{{ $product->id }}">
 
-                                    </tr>
+                                        <i class="fas fa-trash"></i>
 
-                                @endforeach
+                                    </button>
+                                </td>
 
-                            </tbody>
+                            </tr>
 
-                        </table>
+                            @endforeach
 
-                    </div>
+                        </tbody>
 
-                    <!-- Pagination -->
+                    </table>
 
-                    <div class="mt-3 d-flex justify-content-center">
+                </div>
 
-                        @if ($products->lastPage() > 1)
-                            <nav>
-                                <ul class="pagination justify-content-center">
+            </form>
 
-                                    @for ($i = 1; $i <= $products->lastPage(); $i++)
-                                        <li class="page-item {{ $products->currentPage() == $i ? 'active' : '' }}">
-                                            <a class="page-link" href="{{ $products->url($i) }}">
-                                                {{ $i }}
-                                            </a>
-                                        </li>
-                                    @endfor
+            <!-- Pagination -->
 
-                                </ul>
-                            </nav>
-                        @endif
-                    </div>
+            <div class="mt-3 d-flex justify-content-center">
 
-                @else
+                @if ($products->lastPage() > 1)
+                <nav>
+                    <ul class="pagination justify-content-center">
 
-                    <div class="alert alert-warning">
+                        @for ($i = 1; $i <= $products->lastPage(); $i++)
+                            <li class="page-item {{ $products->currentPage() == $i ? 'active' : '' }}">
+                                <a class="page-link" href="{{ $products->url($i) }}">
+                                    {{ $i }}
+                                </a>
+                            </li>
+                            @endfor
 
-                        No Products Found.
-
-                    </div>
-
+                    </ul>
+                </nav>
                 @endif
+            </div>
+
+            @else
+
+            <div class="alert alert-warning">
+
+                No Products Found.
 
             </div>
+
+            @endif
 
         </div>
 
     </div>
 
+</div>
+
 @endsection
 
 @push('scripts')
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
 
-            // -----------------------------
-            // Drag & Drop Sorting
-            // -----------------------------
-            const sortableList = document.getElementById('sortable-list');
+        // -----------------------------
+        // Drag & Drop Sorting
+        // -----------------------------
+        const sortableList = document.getElementById('sortable-list');
 
-            if (sortableList) {
+        if (sortableList) {
 
-                new Sortable(sortableList, {
-                    handle: '.handle',
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
+            new Sortable(sortableList, {
+                handle: '.handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
 
-                    onEnd: function () {
-                        updateOrder();
-                    }
-                });
+                onEnd: function() {
+                    updateOrder();
+                }
+            });
 
-            }
+        }
 
-            function updateOrder() {
+        function updateOrder() {
 
-                let items = [];
+            let items = [];
 
-                document.querySelectorAll('#sortable-list tr').forEach(function (row, index) {
+            document.querySelectorAll('#sortable-list tr').forEach(function(row, index) {
 
-                    items.push(row.dataset.id);
+                items.push(row.dataset.id);
 
-                    row.querySelector('.order-badge').innerHTML = index + 1;
+                row.querySelector('.order-badge').innerHTML = index + 1;
 
-                });
+            });
 
-                $.ajax({
+            $.ajax({
 
-                    url: "{{ route('products.update-order') }}",
+                url: "{{ route('products.update-order') }}",
 
-                    method: "POST",
+                method: "POST",
 
-                    data: {
+                data: {
 
-                        _token: "{{ csrf_token() }}",
+                    _token: "{{ csrf_token() }}",
 
-                        items: items
+                    items: items
 
-                    },
+                },
 
-                    success: function () {
+                success: function() {
 
-                        Swal.fire({
+                    Swal.fire({
 
-                            toast: true,
+                        toast: true,
 
-                            position: 'top-end',
+                        position: 'top-end',
 
-                            icon: 'success',
+                        icon: 'success',
 
-                            title: 'Order Updated Successfully',
+                        title: 'Order Updated Successfully',
 
-                            showConfirmButton: false,
+                        showConfirmButton: false,
 
-                            timer: 1500
+                        timer: 1500
 
-                        });
+                    });
 
-                    },
+                },
 
-                    error: function () {
+                error: function() {
 
-                        Swal.fire(
+                    Swal.fire(
 
-                            'Error',
+                        'Error',
 
-                            'Unable to update order.',
+                        'Unable to update order.',
 
-                            'error'
+                        'error'
 
-                        );
+                    );
 
-                    }
+                }
 
-                });
+            });
 
-            }
+        }
 
-            // -----------------------------
-            // SweetAlert Delete Confirmation
-            // -----------------------------
-            $('.delete-form').submit(function (e) {
+        // -----------------------------
+        // SweetAlert Delete Confirmation
+        // -----------------------------
+        $('.delete-form').submit(function(e) {
 
-                e.preventDefault();
+            e.preventDefault();
 
-                let form = this;
+            let form = this;
 
-                Swal.fire({
+            Swal.fire({
 
-                    title: 'Delete Product?',
+                title: 'Delete Product?',
 
-                    text: "This action cannot be undone.",
+                text: "This action cannot be undone.",
 
-                    icon: 'warning',
+                icon: 'warning',
 
-                    showCancelButton: true,
+                showCancelButton: true,
 
-                    confirmButtonColor: '#d33',
+                confirmButtonColor: '#d33',
 
-                    cancelButtonColor: '#3085d6',
+                cancelButtonColor: '#3085d6',
 
-                    confirmButtonText: 'Yes, Delete',
+                confirmButtonText: 'Yes, Delete',
 
-                    cancelButtonText: 'Cancel'
+                cancelButtonText: 'Cancel'
 
-                }).then((result) => {
+            }).then((result) => {
 
-                    if (result.isConfirmed) {
+                if (result.isConfirmed) {
 
-                        form.submit();
+                    form.submit();
 
-                    }
-
-                });
+                }
 
             });
 
         });
-    </script>
+
+    });
+
+    // Select All Checkbox
+
+    $("#selectAll").click(function() {
+
+        $(".product-checkbox")
+            .prop(
+                'checked',
+                this.checked
+            );
+
+    });
+
+
+
+    // Reset Sorting
+
+    $("#resetOrder").click(function() {
+
+
+        Swal.fire({
+
+                title: "Reset Sorting?",
+
+                text: "Products will be arranged by default order.",
+
+                icon: "warning",
+
+                showCancelButton: true
+
+
+            })
+            .then((result) => {
+
+
+                if (result.isConfirmed) {
+
+
+                    $.ajax({
+
+                        url: "{{ route('products.reset-order') }}",
+
+                        method: "POST",
+
+
+                        success: function() {
+
+
+                            Swal.fire({
+
+                                toast: true,
+
+                                position: "top-end",
+
+                                icon: "success",
+
+                                title: "Order Reset Successfully",
+
+                                showConfirmButton: false,
+
+                                timer: 1500
+
+
+                            });
+
+
+                            setTimeout(() => {
+
+                                location.reload();
+
+                            }, 1500);
+
+
+                        }
+
+
+                    });
+
+
+                }
+
+
+            });
+
+    });
+
+
+    // Bulk delete confirmation
+
+    $("#bulkForm").submit(function(e) {
+
+
+        let checked =
+            $(".product-checkbox:checked").length;
+
+
+        if (checked === 0) {
+
+            e.preventDefault();
+
+
+            Swal.fire(
+                "Select Products",
+                "Please select at least one product.",
+                "warning"
+            );
+
+
+        }
+
+    });
+
+    $(".delete-btn").click(function() {
+
+        let id = $(this).data('id');
+
+
+        Swal.fire({
+
+            title: "Delete Product?",
+
+            text: "This action cannot be undone.",
+
+            icon: "warning",
+
+            showCancelButton: true
+
+        }).then((result) => {
+
+
+            if (result.isConfirmed) {
+
+
+                let form = document.createElement('form');
+
+                form.method = "POST";
+
+                form.action = "/products/" + id;
+
+
+                form.innerHTML = `
+
+<input type="hidden" name="_token"
+value="{{ csrf_token() }}">
+
+<input type="hidden" name="_method"
+value="DELETE">
+
+`;
+
+
+                document.body.appendChild(form);
+
+                form.submit();
+
+
+            }
+
+
+        });
+
+
+    });
+</script>
 
 @endpush
